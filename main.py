@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from text_similarity import text_similarity
 
 app = FastAPI()
 
