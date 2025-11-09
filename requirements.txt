@@ -1,0 +1,9 @@
+fastapi>=0.119.0
+uvicorn>=0.37.0
+scikit-learn>=1.7.2
+numpy>=1.26.2
+scipy>=1.16.3
+joblib>=1.5.2
+threadpoolctl>=3.6.0
+javalang>=0.13.0
+pydantic>=2.12.2
