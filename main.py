@@ -10,7 +10,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://project_detector.test",
+        "https://project_detector.test",
         "http://localhost",
         "http://127.0.0.1",
     ],
@@ -55,7 +55,6 @@ def detect_plagiarism(request: ComparisonRequest):
 
                 score = detector.compare(code_a, code_b)
 
-                # Only include results with significant similarity (e.g., > 50%)
                 if score > 0.5:
                     results.append(ComparisonResult(
                         submission_a_id=submissions[i]['id'],
@@ -63,7 +62,6 @@ def detect_plagiarism(request: ComparisonRequest):
                         similarity_score=round(score, 4)
                     ))
 
-        # Sort by similarity score (highest first)
         results.sort(key=lambda x: x.similarity_score, reverse=True)
 
         return DetectionResponse(results=results)

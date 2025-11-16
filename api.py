@@ -70,10 +70,9 @@ class PythonSimilarityDetector(BaseSimilarityDetector):
             return []
 
 def main():
-    import os
 
-    file_path1 = "D:/PythonCourse/file_handling/file_detection/folder/text.txt"
-    file_path2 = "D:/PythonCourse/file_handling/file_detection/folder/text2.txt"
+    file_path1 = "D:/Submission Testing/rot13_1.java"
+    file_path2 = "D:/Submission Testing/rot13_1.java"
 
     detector = JavaSimilarityDetector()
 
