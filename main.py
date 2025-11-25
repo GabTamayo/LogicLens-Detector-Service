@@ -1,12 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
+from typing import List, Dict, Any
 import api
 
 app = FastAPI()
 
-#CORS for Laravel communication
+# CORS for Laravel communication
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -19,55 +19,75 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class ComparisonRequest(BaseModel):
-    submissions: List[dict]
-    language: str = "java"
+
+class Submission(BaseModel):
+    id: str
+    file_content: str
+
 
 class ComparisonResult(BaseModel):
     submission_a_id: str
     submission_b_id: str
-    similarity_score: float
+    seq_score: float
+    struct_score: float
+    avg_score: float
+    line_matches: List[Dict[str, Any]]
+
+
+class DetectionRequest(BaseModel):
+    submissions: List[Submission]
+    language: str = "java"
+
 
 class DetectionResponse(BaseModel):
     results: List[ComparisonResult]
+
 
 @app.get("/")
 def root():
     return {"message": "Plagiarism Detection API", "status": "running"}
 
+
 @app.post("/detect", response_model=DetectionResponse)
-def detect_plagiarism(request: ComparisonRequest):
+def detect_plagiarism(request: DetectionRequest):
     try:
-        if request.language.lower() == "java":
+        # Select the proper detector
+        lang = request.language.lower()
+        if lang == "java":
             detector = api.JavaSimilarityDetector()
-        elif request.language.lower() == "python":
+        elif lang == "python":
             detector = api.PythonSimilarityDetector()
         else:
-            raise HTTPException(status_code=400, detail="Unsupported language")
+            raise HTTPException(status_code=400, detail=f"Unsupported language: {request.language}")
 
         results = []
-        submissions = request.submissions
 
-        for i in range(len(submissions)):
-            for j in range(i + 1, len(submissions)):
-                code_a = submissions[i]['file_content']
-                code_b = submissions[j]['file_content']
+        for i in range(len(request.submissions)):
+            for j in range(i + 1, len(request.submissions)):
+                sub_a = request.submissions[i]
+                sub_b = request.submissions[j]
 
-                score = detector.compare(code_a, code_b)
+                comparison = detector.compare(sub_a.file_content, sub_b.file_content)
 
-                if score > 0.5:
+                # Only include if avg_score > threshold (optional)
+                if comparison['avg_score'] > 0.0:  # adjust threshold if needed
                     results.append(ComparisonResult(
-                        submission_a_id=submissions[i]['id'],
-                        submission_b_id=submissions[j]['id'],
-                        similarity_score=round(score, 4)
+                        submission_a_id=sub_a.id,
+                        submission_b_id=sub_b.id,
+                        seq_score=round(comparison['seq_score'], 4),
+                        struct_score=round(comparison['struct_score'], 4),
+                        avg_score=round(comparison['avg_score'], 4),
+                        line_matches=comparison['line_matches']
                     ))
 
-        results.sort(key=lambda x: x.similarity_score, reverse=True)
+        # Sort by avg_score descending
+        results.sort(key=lambda x: x.avg_score, reverse=True)
 
         return DetectionResponse(results=results)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn
