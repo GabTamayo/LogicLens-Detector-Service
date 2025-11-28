@@ -70,7 +70,7 @@ def detect_plagiarism(request: DetectionRequest):
                 comparison = detector.compare(sub_a.file_content, sub_b.file_content)
 
                 # Only include if avg_score > threshold (optional)
-                if comparison['avg_score'] > 0.0:  # adjust threshold if needed
+                if comparison['avg_score'] > 0.5:  # adjust threshold if needed
                     results.append(ComparisonResult(
                         submission_a_id=sub_a.id,
                         submission_b_id=sub_b.id,
