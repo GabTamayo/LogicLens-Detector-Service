@@ -25,7 +25,9 @@ class CodeComparator:
 
 
 class BaseSimilarityDetector(ABC):
-    def __init__(self, min_block_size=3):
+    def __init__(self, seq_weight = 4, struct_weight = 6, min_block_size=3):
+        self.seq_weight = seq_weight
+        self.struct_weight = struct_weight
         self.comparator = CodeComparator(min_block_size)
 
     @abstractmethod
@@ -66,7 +68,7 @@ class BaseSimilarityDetector(ABC):
         struct_score2 = self.comparator.compare_structures(struct_b, struct_a)
         struct_score = (struct_score1 + struct_score2) / 2
 
-        avg_score = (seq_score + struct_score) / 2
+        avg_score = (seq_score * self.seq_weight + struct_score * self.struct_weight) / (self.seq_weight + self.struct_weight)
 
         ast_matches = self.comparator.find_matching_blocks(seq_a, seq_b)
 
@@ -140,9 +142,9 @@ def format_matches(matches):
 
 
 def main():
-    file1 = "C:/Users/gabot/Downloads/text2.java"
-    file2 = "C:/Users/gabot/Downloads/text1.java"
-    detector = JavaSimilarityDetector()
+    file1 = "C:/Users/gabot/Downloads/Activity4(AlahAkbar).txt"
+    file2 = "C:/Users/gabot/Downloads/Activity4(GabTamayo).txt"
+    detector = PythonSimilarityDetector()
 
     try:
         with open(file1, encoding='utf-8') as f1, open(file2, encoding='utf-8') as f2:
