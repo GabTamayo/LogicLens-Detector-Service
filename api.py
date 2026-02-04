@@ -25,14 +25,13 @@ class CodeComparator:
 
 
 class BaseSimilarityDetector(ABC):
-    def __init__(self, seq_weight = 4, struct_weight = 6, min_block_size=3):
+    def __init__(self, seq_weight=4, struct_weight=6, min_block_size=3):
         self.seq_weight = seq_weight
         self.struct_weight = struct_weight
         self.comparator = CodeComparator(min_block_size)
 
     @abstractmethod
     def parse_ast_with_lines(self, code: str):
-        """Parse AST and return (sequence, line_numbers)."""
         pass
 
     def _remove_overlapping_matches(self, matches):
@@ -68,7 +67,8 @@ class BaseSimilarityDetector(ABC):
         struct_score2 = self.comparator.compare_structures(struct_b, struct_a)
         struct_score = (struct_score1 + struct_score2) / 2
 
-        avg_score = (seq_score * self.seq_weight + struct_score * self.struct_weight) / (self.seq_weight + self.struct_weight)
+        avg_score = (seq_score * self.seq_weight + struct_score * self.struct_weight) / (
+                    self.seq_weight + self.struct_weight)
 
         ast_matches = self.comparator.find_matching_blocks(seq_a, seq_b)
 
