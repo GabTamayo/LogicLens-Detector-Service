@@ -26,6 +26,22 @@ A Python-based microservice for code plagiarism detection and similarity analysi
 
 The Detector Service is a standalone microservice that analyzes code submissions for potential plagiarism and similarity. It uses advanced algorithms to compare code structures, variable names, and patterns to identify similarities between student submissions.
 
+## 🧮 Detection Algorithm
+
+The Detector Service uses a hybrid similarity pipeline to produce accurate and robust plagiarism scores:
+
+### 1. AST Extraction (Preprocessing)
+Before any comparison, each code submission is parsed into an **Abstract Syntax Tree (AST)** using Python's built-in `ast` module. This normalizes the code structure — stripping whitespace differences, renaming style variations, and focusing on logical structure rather than superficial formatting.
+
+### 2. difflib SequenceMatcher
+The AST-normalized token sequences are compared using `difflib.SequenceMatcher`, which produces a **sequence similarity ratio** (0.0–1.0) based on the longest common subsequences between the two submissions.
+
+### 3. Cosine Similarity
+The AST token sequences are also vectorized and compared using **cosine similarity**, which measures the angular distance between the token frequency vectors of both submissions, producing a second similarity score (0.0–1.0).
+
+### 4. Averaged Score
+The final similarity score is computed as the **average of both metrics**:
+
 ### Key Capabilities
 
 - **Code Similarity Detection**: Compare two or more code submissions
